@@ -1,4 +1,4 @@
-# PostgreSQL Dockerfies
+# PostgreSQL Dockerfiles
 
 PostgreSQL Dockerfiles for CentOS 7 
 
