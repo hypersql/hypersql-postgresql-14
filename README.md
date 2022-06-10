@@ -9,13 +9,20 @@ Requirements
                                                                                 
 Usage                                                                           
 -----                                                                           
-container 생성
-  	docker-compose build --no-cache                               
-container 구동 
-	docker-compose up -d                                                             
-container 소멸 
-	docker-compose down          
-container를 유지하면서 사용
+- container 생성
+
+  	docker-compose build --no-cache  
+	
+- container 구동 
+
+	docker-compose up -d        
+	
+- container 소멸 
+
+	docker-compose down      
+	
+- container를 유지하면서 사용
+ 
 	docker-compose [start, stop, restart]        
 
 
