@@ -1,0 +1,25 @@
+version: '3.7'
+
+services:
+
+  Postgres: 
+    build:  
+      context: ./build/centpg
+      dockerfile: Dockerfile
+
+    image: postgres
+    container_name: postgres-cntnr
+
+    hostname: postgres
+    ports:
+        - '5432:5432'
+    
+    environment:
+      - POSTGRES_USER=tibero
+      - POSTGRES_PASSWORD=tmax
+      - POSTGRES_DB=tibero
+
+    stdin_open: true
+    tty: true
+
+
