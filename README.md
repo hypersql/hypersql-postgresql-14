@@ -9,11 +9,14 @@ Requirements
                                                                                 
 Usage                                                                           
 -----                                                                           
-
-- docker-compose build --no-cache             # container 생성                  
-- docker-compose up -d                        # container 구동                                       
-- docker-compose down                         # [주의] container 소멸           
-- docker-compose [start, stop, restart]       # container를 유지하면서 사용 
+container 생성
+  	docker-compose build --no-cache                               
+container 구동 
+	docker-compose up -d                                                             
+container 소멸 
+	docker-compose down          
+container를 유지하면서 사용
+	docker-compose [start, stop, restart]        
 
 
 Creating a database at launch
