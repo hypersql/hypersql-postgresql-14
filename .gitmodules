@@ -1,0 +1,3 @@
+[submodule "hypersql-dev-util"]
+	path = hypersql-dev-util
+	url = https://github.com/hypersql/hypersql-dev-util.git
