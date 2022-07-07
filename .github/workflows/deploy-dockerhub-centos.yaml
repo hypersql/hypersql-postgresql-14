@@ -1,7 +1,7 @@
 name: Docker Image CI
 
 on:
-  workflow_dispatch:
+  workflow_dispatch: #for dispatch
   push:
     branches: 
       - 'feature-githubaction-test'
@@ -28,3 +28,5 @@ jobs:
       with:
         push: true
         tags: hypersql-pg14:centos
+        secrets: |
+         GIT_AUTH_TOKEN=${{secrets.GITGUB_TOKEN}}
