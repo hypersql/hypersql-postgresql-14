@@ -26,8 +26,7 @@ jobs:
     - name: Build and push
       uses: docker/build-push-action@v2
       with:
-        context: .
-        file: ./centos/Dockerfile
+        context: ./centos
         push: true
         tags: hypersql-pg14:centos
         secrets: |
