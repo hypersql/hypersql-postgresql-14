@@ -2,7 +2,8 @@
 
 save_password() {
   if [[ $POSTGRES_PASSWORD == "" ]] ; then
-    exit -1
+    echo "POSTGRES_PASSWORD environment variable is not set. Generating random password for user ${PGUSER}"
+    POSTGRES_PASSWORD=$(pwgen -c -n 1 12)
   fi
 
   PASSWORD_FILE=/hypersql/settings/pgpassword
@@ -11,6 +12,7 @@ save_password() {
   echo $POSTGRES_PASSWORD > $PASSWORD_FILE
   unset POSTGRES_PASSWORD
 
+  echo "Password for ${PGUSER} is written in ${PASSWORD_FILE}"
   return 0
 }
 
@@ -112,13 +114,15 @@ main() {
   set_system_kernel_parameters
 
   # start server
-  postgres
+  postgres -d $POSTGRES_DEBUG_LEVEL
 }
 
 main
 
-while true :
-do
-  echo "hello"
-  sleep 1
-done
+if [[ ${SLEEP_ON_FAILURE,,} == "y" ]] ; then
+  echo "sleeping mode"
+  while true :
+  do
+    sleep 1
+  done
+fi

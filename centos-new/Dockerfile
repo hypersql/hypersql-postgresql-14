@@ -5,6 +5,7 @@ FROM centos:centos7.9.2009
 # Install necessary packages
 # Add in alphabetical order
 RUN yum -y update && yum clean all \
+    && yum -y install epel-release \
     && yum -y install \
            gcc \
            gcc-c++ \
@@ -54,13 +55,13 @@ RUN groupadd hypersql -g 1008 \
                 /var/run/hypersql \
     && chown -R hypersql:hypersql /hypersql /var/run/hypersql
 
-COPY bashrc.hypersql bashrc.tmp entrypoint.sh postgresql.init.conf /hypersql/
-RUN chown hypersql:hypersql /hypersql/bashrc.hypersql \
-                            /hypersql/bashrc.tmp \
-                            /hypersql/entrypoint.sh \
-                            /hypersql/postgresql.init.conf \ 
-    && mv /hypersql/bashrc.hypersql /hypersql/postgresql.init.conf /hypersql/settings \
-    && cat /hypersql/bashrc.tmp >> /hypersql/.bashrc 
+COPY ./settings/* /hypersql/settings/
+RUN chown hypersql:hypersql /hypersql/settings/bashrc.hypersql \
+                            /hypersql/settings/bashrc.tmp \
+                            /hypersql/settings/entrypoint.sh \
+                            /hypersql/settings/postgresql.init.conf \
+    && cat /hypersql/settings/bashrc.tmp >> /hypersql/.bashrc \
+    && rm /hypersql/settings/bashrc.tmp
 
 EXPOSE 5432
 
@@ -69,5 +70,7 @@ USER hypersql
 ENV POSTGRES_PASSWORD=""
 ENV POSTGRES_ENABLE_DATA_CHECKSUMS="y"
 ENV POSTGRES_HOST_AUTH_METHOD="scram-sha-256"
+ENV POSTGRES_DEBUG_LEVEL=1
+ENV SLEEP_ON_FAILURE="n"
 
-ENTRYPOINT ["bash", "-i", "/hypersql/entrypoint.sh"]
+ENTRYPOINT ["bash", "-i", "/hypersql/settings/entrypoint.sh"]
