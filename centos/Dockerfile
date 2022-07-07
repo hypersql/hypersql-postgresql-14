@@ -1,33 +1,76 @@
-FROM centos:centos7
+FROM centos:centos7.9.2009
 
-RUN yum -y update; yum clean all
-RUN yum -y install sudo epel-release; yum clean all
-RUN yum -y install postgresql-server postgresql postgresql-contrib supervisor pwgen; yum clean all
+# Argument settings
 
-ADD ./postgresql-setup /usr/bin/postgresql-setup
-ADD ./supervisord.conf /etc/supervisord.conf
-ADD ./start_postgres.sh /start_postgres.sh
+# Install necessary packages
+# Add in alphabetical order
+RUN yum -y update && yum clean all \
+    && yum -y install epel-release \
+    && yum -y install \
+           gcc \
+           gcc-c++ \
+           gettext \
+           gettext-devel \
+           git \
+           libxslt \
+           libicu \
+           make \
+           openssl \
+           openssl-devel \
+           perl \
+           perl-libs \
+           python3 \
+           pwgen \
+           readline \
+           readline-devel \
+           systemd-sysv \
+           sudo \
+           tar \
+           tcl \
+           which \
+           zlib \
+           zlib-devel \
+    && yum clean all \
+# Download and install PostgreSQL RPM
+    && export PG_MAJOR=14 \
+    && export PG_VERSION=14.3 \
+    && export PG_RPM_BASE_URL=https://yum.postgresql.org/${PG_MAJOR}/redhat/rhel-7-x86_64/ \
+    && rpm -ivh ${PG_RPM_BASE_URL}/postgresql${PG_MAJOR}-libs-${PG_VERSION}-1PGDG.rhel7.x86_64.rpm \
+    && rpm -ivh ${PG_RPM_BASE_URL}/postgresql${PG_MAJOR}-${PG_VERSION}-1PGDG.rhel7.x86_64.rpm \
+    && rpm -ivh ${PG_RPM_BASE_URL}/postgresql${PG_MAJOR}-server-${PG_VERSION}-1PGDG.rhel7.x86_64.rpm \
+    && rpm -ivh ${PG_RPM_BASE_URL}/postgresql${PG_MAJOR}-contrib-${PG_VERSION}-1PGDG.rhel7.x86_64.rpm
 
-#Sudo requires a tty. fix that.
-RUN sed -i 's/.*requiretty$/#Defaults requiretty/' /etc/sudoers
-RUN chmod +x /usr/bin/postgresql-setup
-RUN chmod +x /start_postgres.sh
+# TODO: Add outside extensions here
 
-RUN /usr/bin/postgresql-setup initdb
+# User settings
+RUN groupadd hypersql -g 1008 \
+    && useradd hypersql -u 1008 -g hypersql -c 'HyperSQL Database' -d /hypersql \
+    && passwd -d hypersql \
+    && echo "hypersql  ALL=(ALL)  NOPASSWD: ALL" >> /etc/sudoers \
+    && mkdir -p /hypersql/settings \
+                /hypersql/pg/14/data \
+                /hypersql/pg/14/log/pg_log \
+                /hypersql/pg/14/pg_wall \
+                /hypersql/pg/14/archive \
+                /var/run/hypersql \
+    && chown -R hypersql:hypersql /hypersql /var/run/hypersql
 
-ADD ./postgresql.conf /var/lib/pgsql/data/postgresql.conf
-
-RUN chown -v postgres.postgres /var/lib/pgsql/data/postgresql.conf
-
-RUN echo "host    all             all             0.0.0.0/0               md5" >> /var/lib/pgsql/data/pg_hba.conf
-
-VOLUME ["/var/lib/pgsql"]
+COPY ./settings/* /hypersql/settings/
+RUN chown hypersql:hypersql /hypersql/settings/bashrc.hypersql \
+                            /hypersql/settings/bashrc.tmp \
+                            /hypersql/settings/entrypoint.sh \
+                            /hypersql/settings/postgresql.init.conf \
+    && cat /hypersql/settings/bashrc.tmp >> /hypersql/.bashrc \
+    && rm /hypersql/settings/bashrc.tmp
 
 EXPOSE 5432
 
-ENV POSTGRES_DB=""
-ENV POSTGRES_USER=""
+USER hypersql
+
 ENV POSTGRES_PASSWORD=""
+ENV POSTGRES_ENABLE_DATA_CHECKSUMS="y"
+ENV POSTGRES_HOST_AUTH_METHOD="scram-sha-256"
+ENV POSTGRES_DEBUG_LEVEL=1
+ENV SLEEP_ON_FAILURE="n"
 
-
-CMD ["/bin/bash", "/start_postgres.sh", "POSTGRES_DB", "POSTGRES_USER", "POSTGRES_PASSWORD"]
+ENTRYPOINT ["bash", "-i", "/hypersql/settings/entrypoint.sh"]

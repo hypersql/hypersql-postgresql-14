@@ -1,0 +1,28 @@
+#!/bin/bash
+
+PS1="[\u@\h:\W]$ "
+
+export PGVERSION=14
+
+if [ -f "/usr/pgsql-$PGVERSION/bin/pg_ctl" ]; then
+        export PGINST=/usr/pgsql-$PGVERSION
+        export MANPATH=/usr/pgsql-$PGVERSION/share/man:$MANPATH
+        export LD_LIBRARY_PATH=/usr/pgsql-$PGVERSION/lib:$LD_LIBRARY_PATH
+        export PATH=/usr/pgsql-$PGVERSION/bin:$PATH
+        export PGLIB=/usr/pgsql-$PGVERSION/lib
+fi
+
+export PGHOME=/hypersql/pg
+export PGDATA=/hypersql/pg/$PGVERSION/data
+export PGHOST=/var/run/hypersql
+export PGUSER=postgres
+
+#HyperSQL-PostgreSQL ALIAS
+alias pginst="cd $PGINST"
+alias pglib="cd $PGLIB"
+alias pghome="cd $PGHOME"
+alias pgdata="cd $PGDATA"
+alias pglog="cd $PGHOME/$PGVERSION/log/pg_log"
+alias pgwal="cd $PGHOME/$PGVERSION/pg_wal"
+alias pgconf="vi $PGDATA/postgresql.conf"
+alias pghba="vi $PGDATA/pg_hba.conf"
