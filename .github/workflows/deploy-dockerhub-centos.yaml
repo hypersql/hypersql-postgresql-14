@@ -28,6 +28,6 @@ jobs:
       with:
         context: ./centos
         push: true
-        tags: hypersql-pg14:centos
+        tags: /hocheol/hypersql-pg14:centos
         secrets: |
          GIT_AUTH_TOKEN=${{secrets.GITGUB_TOKEN}}
