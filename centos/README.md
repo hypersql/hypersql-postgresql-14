@@ -29,8 +29,3 @@ Usage
     docker run --privileged -e POSTGRES_HOST_AUTH_METHOD="[available auth-method]"
                --name hypersql-pg14 hypersql-pg14:centos
     ```
-  - Change log level of PostgreSQL server
-    ```
-    docker run --privileged -e POSTGRES_DEBUG_LEVEL=[1-5, default=1]
-               --name hypersql-pg14 hypersql-pg14:centos
-    ```

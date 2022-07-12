@@ -1,7 +1,5 @@
 FROM centos:centos7.9.2009
 
-# Argument settings
-
 # Install necessary packages
 # Add in alphabetical order
 RUN yum -y update && yum clean all \
@@ -43,34 +41,23 @@ RUN yum -y update && yum clean all \
 # TODO: Add outside extensions here
 
 # User settings
+COPY ./settings/* /tmp/settings/
 RUN groupadd hypersql -g 1008 \
     && useradd hypersql -u 1008 -g hypersql -c 'HyperSQL Database' -d /hypersql \
     && passwd -d hypersql \
     && echo "hypersql  ALL=(ALL)  NOPASSWD: ALL" >> /etc/sudoers \
-    && mkdir -p /hypersql/settings \
-                /hypersql/pg/14/data \
+    && mkdir -p /hypersql/pg/14/data \
                 /hypersql/pg/14/log/pg_log \
                 /hypersql/pg/14/pg_wall \
                 /hypersql/pg/14/archive \
                 /var/run/hypersql \
-    && chown -R hypersql:hypersql /hypersql /var/run/hypersql
-
-COPY ./settings/* /hypersql/settings/
-RUN chown hypersql:hypersql /hypersql/settings/bashrc.hypersql \
-                            /hypersql/settings/bashrc.tmp \
-                            /hypersql/settings/entrypoint.sh \
-                            /hypersql/settings/postgresql.init.conf \
+    && chown -R hypersql:hypersql /hypersql /var/run/hypersql \
+    && mv /tmp/settings /hypersql/settings \
+    && chown -R hypersql:hypersql /hypersql/settings \
     && cat /hypersql/settings/bashrc.tmp >> /hypersql/.bashrc \
     && rm /hypersql/settings/bashrc.tmp
 
-EXPOSE 5432
-
 USER hypersql
-
-ENV POSTGRES_PASSWORD=""
-ENV POSTGRES_ENABLE_DATA_CHECKSUMS="y"
-ENV POSTGRES_HOST_AUTH_METHOD="scram-sha-256"
-ENV POSTGRES_DEBUG_LEVEL=1
-ENV SLEEP_ON_FAILURE="n"
+EXPOSE 5432
 
 ENTRYPOINT ["bash", "-i", "/hypersql/settings/entrypoint.sh"]

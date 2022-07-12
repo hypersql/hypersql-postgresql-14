@@ -1,8 +1,9 @@
 #!/bin/bash
 
 save_password() {
-  if [[ $POSTGRES_PASSWORD == "" ]] ; then
+  if [[ -z "$POSTGRES_PASSWORD" ]] ; then
     echo "POSTGRES_PASSWORD environment variable is not set. Generating random password for user ${PGUSER}"
+    sudo yum -y update && sudo yum -y install pwgen
     POSTGRES_PASSWORD=$(pwgen -c -n 1 12)
   fi
 
@@ -27,11 +28,17 @@ get_initdb_args() {
   # WALDIR is set as $PGHOME/$PGVERSION/pg_wal
   result="${result} -X ${PGHOME}/${PGVERSION}/pg_wal"
   # auth method is set as $POSTGRES_HOST_AUTH_METHOD
-  result="${result} --auth-host=${POSTGRES_HOST_AUTH_METHOD}"
+  if [[ -n "${POSTGRES_HOST_AUTH_METHOD}" ]] ; then
+    result="${result} --auth-host=${POSTGRES_HOST_AUTH_METHOD}"
+  else
+    result="${result} --auth-host=scram-sha-256"
+  fi
 
   # lastly check if we want to enable data checksums
-  if [[ ${POSTGRES_ENABLE_DATA_CHECKSUMS,,} == "y" ]] ; then
-    result="${result} --data-checksums"
+  if [[ -n "${POSTGRES_ENABLE_DATA_CHECKSUMS}" ]] ; then
+    if [[ ${POSTGRES_ENABLE_DATA_CHECKSUMS,,} == "y" ]] ; then
+      result="${result} --data-checksums"
+    fi
   fi
 
   echo "$result"
@@ -40,14 +47,14 @@ get_initdb_args() {
 init_postgres_cluster() {
   save_password
   if [[ $? -ne 0 ]] ; then
-    exit -1
+    return -1
   fi
 
   INITDB_ARGS=$(get_initdb_args)
   initdb $INITDB_ARGS 
   
   if [[ $? -ne 0 ]] ; then 
-    exit -1
+    return -1
   fi
 
   echo "include = '/hypersql/settings/postgresql.init.conf'" >> $PGDATA/postgresql.conf
@@ -78,7 +85,7 @@ invoke_sysctl_to_set_parameters() {
   # SEMMSL = max(default value, 17) 
   target_semmsl=$(( semmsl_dflt > 17 ? semmsl_dflt : 17 ))
   # SEMMNI = ceil((max_connections + autovacuum_max_workers + max_worker_processes + 5) / 16)
-  target_semmni=$(( (MAX_CONNECTION + AUTOVACUMM_MAX_WORKERS + MAX_WORKER_PROCESSES + 5) / 16 + 1 ))
+  target_semmni=$(( (MAX_CONNECTIONS + AUTOVACUMM_MAX_WORKERS + MAX_WORKER_PROCESSES + 5) / 16 + 1 ))
   # SEMMNS = ceil((max_connections + autovacuum_max_workers + max_worker_processes) + 5) /16) * 17
   target_semmns=$(( target_semmni * 17 ))
   # set semaphore
@@ -109,12 +116,18 @@ set_system_kernel_parameters() {
 main() {
   # initialize postgres cluster
   init_postgres_cluster
+  if [[ $? -eq -1 ]] ; then
+    return
+  fi
 
   # set system kernel parameters
   set_system_kernel_parameters
+  if [[ $? -eq -1 ]] ; then
+    return
+  fi
 
   # start server
-  postgres -d $POSTGRES_DEBUG_LEVEL
+  postgres
 }
 
 main
