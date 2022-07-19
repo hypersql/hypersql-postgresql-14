@@ -2,5 +2,6 @@
 
 Available Dockerfiles
 ---------------------
-- centos: PostgreSQL14.3/CentOS7.9.2009
-- alpine:
+- centos: PostgreSQL 14.3 on CentOS 7.9.2009
+- redhat: PostgreSQL 14.3 on RedHat UBI 8 Latest
+- alpine: (Coming Soon)
