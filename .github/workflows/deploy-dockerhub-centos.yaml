@@ -28,6 +28,6 @@ jobs:
       with:
         context: ./centos
         push: true
-        tags: hypersql/hypersql-pg14:centos
+        tags: hypersql/postgres:14.3-centos
         secrets: |
          GIT_AUTH_TOKEN=${{secrets.HYPERSQL_GITHUB_ACCESS_TOKEN}}
