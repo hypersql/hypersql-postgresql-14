@@ -28,6 +28,6 @@ jobs:
       with:
         context: ./redhat
         push: true
-        tags: hypersql/hypersql-pg14:redhat
+        tags: hypersql/postgres:14.3-redhat
         secrets: |
          GIT_AUTH_TOKEN=${{secrets.HYPERSQL_GITHUB_ACCESS_TOKEN}}
