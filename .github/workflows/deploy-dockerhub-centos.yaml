@@ -4,7 +4,7 @@ on:
   workflow_dispatch: #for dispatch
   pull_request:
     branches: 
-      - master
+      - main
 
 jobs:
   build-and-push-image:
